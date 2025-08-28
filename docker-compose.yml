@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   pugo:
-    image: YOUR_DOCKERHUB_USERNAME/pugo-bot:latest
+    image: ayeesuttiporn/webhook-miyo-noti-discord-live:latest
     container_name: pugo-bot
     restart: unless-stopped
     env_file: .env
