@@ -1,0 +1,43 @@
+name: CI/CD - Pugo Bot (Docker + VPS)
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/webhook-miyo-noti-discord-live:latest, ${{ secrets.DOCKERHUB_USERNAME }}/webhook-miyo-noti-discord-live:${{ github.sha }}
+
+  deploy-to-vps:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH to VPS & Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ secrets.VPS_APP_DIR }}   # โฟลเดอร์ที่มี docker-compose.yml และ .env
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/webhook-miyo-noti-discord-live:latest
+            docker compose up -d
+            docker image prune -f

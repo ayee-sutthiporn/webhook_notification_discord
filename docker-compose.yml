@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  pugo:
+    image: YOUR_DOCKERHUB_USERNAME/pugo-bot:latest
+    container_name: pugo-bot
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8080:8080" # เปิด webhook port ออกอินเทอร์เน็ต
